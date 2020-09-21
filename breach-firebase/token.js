@@ -6,7 +6,8 @@ module.exports = {
     createUserToken: (user) => {
         return jwt.sign({
             role: "user",
-            email: user.user.email
+            email: user.user.email,
+            name: user.user.name
         },
         key)
     },
