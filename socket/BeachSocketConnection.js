@@ -12,9 +12,11 @@ module.exports = {
         const id = uuidv4();
         
         clients[id] = wsConnection
+        console.log('addding ' + id)
 
         wsConnection.on('close', () => {
             delete clients[id]
+            console.log('has left: ' + id)
         })
     },
 

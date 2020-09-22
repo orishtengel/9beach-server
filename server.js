@@ -105,9 +105,6 @@ app.post('/deleteShift', async function (req, res) {
     }
 })
 
-
-
-
 // Start the server on port 3000
 // app.listen(port, () => {
 //     console.log('Express server listening on port', port)
