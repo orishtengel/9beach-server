@@ -9,7 +9,7 @@ const http = require('http');
 const port = process.env.PORT || "4000";
 
 const { login } = require("./breach-firebase/BeachFIrebaseConnection");
-const { addShift, deleteShifts, getUser, getShifts } = require("./breach-firebase/BeachFirestoreConnection");
+const { addShift, deleteShifts, getUser, getShifts, addTips, getTips } = require("./breach-firebase/BeachFirestoreConnection");
 const { createUserToken, decodeToken } = require("./breach-firebase/token");
 const dayjs = require("dayjs");
 const { addConnection, broadcast } = require("./socket/BeachSocketConnection");
@@ -99,8 +99,13 @@ app.post('/deleteShift', async function (req, res) {
         let user = await getUser(req.beachUserToken.email)
         if(user) {
             let shifts = await deleteShifts(req.body.date, req.beachUserToken.email, user.name)
-            if(shifts)
+            if(shifts) {
                 res.status(200).send(JSON.stringify({ ok: true }))
+                broadcast('DELETE_EVENT', shifts)
+                console.log("xxx", shifts)
+
+            }
+              
         }
     }
 })
@@ -121,3 +126,27 @@ wss.on('connection', ( wsConnection ) => {
 httpServer.listen(port, function() {
     console.log(`http/ws server listening on ${port}`);
 });
+
+app.get('/getTip', async function (req, res) {
+    if(req.beachUserToken) {
+        let tip = await getTips(req.beachUserToken.email)
+        console.log(tip)
+        res.status(200).send(tip)
+    }
+    else {
+        res.status(400)
+    }
+})
+
+app.post('/addTip', async function (req, res) {
+    if(req.beachUserToken) {
+        let tip = await addTips(req.body.date, req.beachUserToken.email, req.body.deposit , req.body.tips)
+        if(tip) { 
+            res.status(200).send(JSON.stringify({ ok: true, tip: tip }))
+            
+        }
+        else {
+            res.status(400)
+        }
+    }
+})

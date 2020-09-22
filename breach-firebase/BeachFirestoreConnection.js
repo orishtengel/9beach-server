@@ -34,10 +34,30 @@ module.exports = {
         let dateHour = dateId[1] 
         let data = {}
         data[dateHour] = admin.firestore.FieldValue.arrayRemove({email : userId, name : userName})
-        return await db.collection('shifts').doc(dateKey).update(data)
+        let result = await db.collection('shifts').doc(dateKey).set(data, {merge: true})
+        console.log(result)
+        if(result) 
+            return { date: date, title: userName }
+        else
+            return undefined
+       
     },
     getUser: async (userId) => {
         const snapshot = await db.collection('users').doc(userId).get()
         return snapshot.data()
+    },
+    addTips: async(date, userId, deposit, tip) => {
+        let dateId = dayjs(date).format("YYYY-MM-DD")
+        let data = { }
+        data[dateId] = {deposit: deposit, tip: tip}
+        await db.collection('tips').doc(userId).set(data, {merge: true})
+    },
+    getTips: async (userId) => {
+        let snapshot = await db.collection('tips').doc(userId).get()
+        let data = await snapshot.data()
+        return data
     }
+    
+    
+    
 }
