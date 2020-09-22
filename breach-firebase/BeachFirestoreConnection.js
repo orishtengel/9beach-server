@@ -21,7 +21,12 @@ module.exports = {
         let dateHour = dateId[1] 
         let data = {}
         data[dateHour] = admin.firestore.FieldValue.arrayUnion({email : userId , name : userName})
-        return await db.collection('shifts').doc(dateKey).set(data, {merge: true})
+        let result = await db.collection('shifts').doc(dateKey).set(data, {merge: true})
+
+        if(result) 
+            return { date: date, title: userName }
+        else
+            return undefined
     },
     deleteShifts: async (date, userId, userName) => {
         let dateId = dayjs(date).format("YYYY-MM-DD H:mm").split(' ')

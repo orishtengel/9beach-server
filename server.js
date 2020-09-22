@@ -2,14 +2,17 @@ const express = require("express");
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const cors = require('cors')
+const websocket = require('ws');
+const http = require('http');
+
 
 const port = process.env.PORT || "4000";
 
-
 const { login } = require("./breach-firebase/BeachFIrebaseConnection");
-const { getShiftsByDate, addShift, deleteShifts, getUser, getShifts } = require("./breach-firebase/BeachFirestoreConnection");
+const { addShift, deleteShifts, getUser, getShifts } = require("./breach-firebase/BeachFirestoreConnection");
 const { createUserToken, decodeToken } = require("./breach-firebase/token");
 const dayjs = require("dayjs");
+const { addConnection, broadcast } = require("./socket/BeachSocketConnection");
 
 const app = express();
 app.use(cookieParser());
@@ -82,9 +85,11 @@ app.post('/addShift', async function (req, res) {
     if(req.beachUserToken) {
         let user = await getUser(req.beachUserToken.email)
         if(user) {
-            let shifts = await addShift(req.body.date, req.beachUserToken.email, user.name)
-            if(shifts)
-                res.status(200).send(JSON.stringify({ ok: true }))
+            let shift = await addShift(req.body.date, req.beachUserToken.email, user.name)
+            if(shift) {
+                res.status(200).send(JSON.stringify({ ok: true, shift: shift }))
+                broadcast('ADD_EVENT', shift)
+            }
         }
     }
 })
@@ -100,8 +105,22 @@ app.post('/deleteShift', async function (req, res) {
     }
 })
 
-// Start the server on port 3000
-app.listen(port, () => {
-    console.log('Express server listening on port', port)
 
+
+
+// Start the server on port 3000
+// app.listen(port, () => {
+//     console.log('Express server listening on port', port)
+
+// });
+
+const httpServer = http.createServer(app);
+const wss = new websocket.Server({ server: httpServer });
+
+wss.on('connection', ( wsConnection ) => {
+    addConnection(wsConnection)
+})
+
+httpServer.listen(port, function() {
+    console.log(`http/ws server listening on ${port}`);
 });
