@@ -22,7 +22,7 @@ module.exports = {
         let data = {}
         data[dateHour] = admin.firestore.FieldValue.arrayUnion({email : userId , name : userName})
         let result = await db.collection('shifts').doc(dateKey).set(data, {merge: true})
-
+        console.log(result)
         if(result) 
             return { date: date, title: userName }
         else
