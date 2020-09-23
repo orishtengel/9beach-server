@@ -15,27 +15,25 @@ module.exports = {
         const snapshot = await db.collection('shifts').doc(dateId).get()
         return snapshot.data()
     },
-    addShift: async (date, userId , userName) => {
+    addShift: async (date, userId , userName , color) => {
         let dateId = dayjs(date).format("YYYY-MM-DD H:mm").split(' ')
         let dateKey = dateId[0]
         let dateHour = dateId[1] 
         let data = {}
-        data[dateHour] = admin.firestore.FieldValue.arrayUnion({email : userId , name : userName})
+        data[dateHour] = admin.firestore.FieldValue.arrayUnion({email : userId , name : userName, backgroundColor: color})
         let result = await db.collection('shifts').doc(dateKey).set(data, {merge: true})
-        console.log(result)
         if(result) 
-            return { date: date, title: userName }
+            return { date: date, title: userName, backgroundColor : color}
         else
             return undefined
     },
-    deleteShifts: async (date, userId, userName) => {
+    deleteShifts: async (date, userId, userName, color) => {
         let dateId = dayjs(date).format("YYYY-MM-DD H:mm").split(' ')
         let dateKey = dateId[0]
         let dateHour = dateId[1] 
         let data = {}
-        data[dateHour] = admin.firestore.FieldValue.arrayRemove({email : userId, name : userName})
+        data[dateHour] = admin.firestore.FieldValue.arrayRemove({email : userId, name : userName, backgroundColor : color})
         let result = await db.collection('shifts').doc(dateKey).set(data, {merge: true})
-        console.log(result)
         if(result) 
             return { date: date, title: userName }
         else
@@ -50,7 +48,7 @@ module.exports = {
         let dateId = dayjs(date).format("YYYY-MM-DD")
         let data = { }
         data[dateId] = {deposit: deposit, tip: tip}
-        await db.collection('tips').doc(userId).set(data, {merge: true})
+        return await db.collection('tips').doc(userId).set(data, {merge: true})
     },
     getTips: async (userId) => {
         let snapshot = await db.collection('tips').doc(userId).get()

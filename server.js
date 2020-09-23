@@ -72,7 +72,8 @@ app.post('/getShifts', async function (req, res) {
                 shifts[dateId][keyHour].map(user => {
                     events.push({
                         title: user.name,
-                        date: dayjs(dateId + " " + keyHour, 'YYYY-MM-DD H:mm')
+                        date: dayjs(dateId + " " + keyHour, 'YYYY-MM-DD H:mm'),
+                        backgroundColor : user.backgroundColor
                     })
                 })
             })
@@ -85,7 +86,7 @@ app.post('/addShift', async function (req, res) {
     if(req.beachUserToken) {
         let user = await getUser(req.beachUserToken.email)
         if(user) {
-            let shift = await addShift(req.body.date, req.beachUserToken.email, user.name)
+            let shift = await addShift(req.body.date, req.beachUserToken.email, user.name, user.color)
             if(shift) {
                 res.status(200).send(JSON.stringify({ ok: true, shift: shift }))
                 broadcast('ADD_EVENT', shift)
@@ -98,12 +99,10 @@ app.post('/deleteShift', async function (req, res) {
     if(req.beachUserToken) {
         let user = await getUser(req.beachUserToken.email)
         if(user) {
-            let shifts = await deleteShifts(req.body.date, req.beachUserToken.email, user.name)
+            let shifts = await deleteShifts(req.body.date, req.beachUserToken.email, user.name, user.color)
             if(shifts) {
                 res.status(200).send(JSON.stringify({ ok: true }))
                 broadcast('DELETE_EVENT', shifts)
-                console.log("xxx", shifts)
-
             }
               
         }
@@ -129,21 +128,31 @@ httpServer.listen(port, function() {
 
 app.get('/getTip', async function (req, res) {
     if(req.beachUserToken) {
+        console.log('xxxx here1')
         let tip = await getTips(req.beachUserToken.email)
-        console.log(tip)
-        res.status(200).send(tip)
+        console.log('xxxx here2')
+        if(tip) {
+            console.log('xxxx here3')
+            res.status(200).send(tip)
+            console.log('xxxx here4')
+        }
+        else {
+            console.log('xxxx here5')
+            res.sendStatus(400)
+            console.log('xxxx here6')
+        }
     }
     else {
+        console.log('xxxx here7')
         res.status(400)
     }
 })
 
 app.post('/addTip', async function (req, res) {
     if(req.beachUserToken) {
-        let tip = await addTips(req.body.date, req.beachUserToken.email, req.body.deposit , req.body.tips)
-        if(tip) { 
-            res.status(200).send(JSON.stringify({ ok: true, tip: tip }))
-            
+        let writeResult = await addTips(req.body.date, req.beachUserToken.email, req.body.deposit , req.body.tips)
+        if(writeResult) { 
+            res.status(200).send(JSON.stringify({ ok: true }))  
         }
         else {
             res.status(400)
