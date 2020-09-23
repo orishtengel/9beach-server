@@ -9,7 +9,7 @@ const http = require('http');
 const port = process.env.PORT || "4000";
 
 const { login } = require("./breach-firebase/BeachFIrebaseConnection");
-const { addShift, deleteShifts, getUser, getShifts, addTips, getTips } = require("./breach-firebase/BeachFirestoreConnection");
+const { addShift, deleteShifts, getUser, getShifts, addTips, getTips, getShiftsByDate } = require("./breach-firebase/BeachFirestoreConnection");
 const { createUserToken, decodeToken } = require("./breach-firebase/token");
 const dayjs = require("dayjs");
 const { addConnection, broadcast } = require("./socket/BeachSocketConnection");
@@ -69,11 +69,12 @@ app.post('/getShifts', async function (req, res) {
         let events = []
         Object.keys(shifts).map(dateId => {
             Object.keys(shifts[dateId]).map(keyHour => {
-                shifts[dateId][keyHour].map(user => {
+                shifts[dateId][keyHour].map(shift => {
                     events.push({
-                        title: user.name,
+                        id: shift.id,
+                        title: shift.name,
                         date: dayjs(dateId + " " + keyHour, 'YYYY-MM-DD H:mm'),
-                        backgroundColor : user.backgroundColor
+                        backgroundColor : shift.backgroundColor
                     })
                 })
             })
@@ -86,10 +87,17 @@ app.post('/addShift', async function (req, res) {
     if(req.beachUserToken) {
         let user = await getUser(req.beachUserToken.email)
         if(user) {
-            let shift = await addShift(req.body.date, req.beachUserToken.email, user.name, user.color)
-            if(shift) {
-                res.status(200).send(JSON.stringify({ ok: true, shift: shift }))
-                broadcast('ADD_EVENT', shift)
+            let isExistsAlready = await getShiftsByDate(req.beachUserToken.email, req.body.date)
+            if(!isExistsAlready) {
+                let shift = await addShift(req.body.date, req.beachUserToken.email, user.name, user.color)
+                if(shift) {
+                    res.status(200).send(JSON.stringify({ ok: true, shift: shift }))
+                    console.log('xxx', shift)
+                    broadcast('ADD_EVENT', shift)
+                }
+            }
+            else {
+                res.sendStatus(400)
             }
         }
     }
@@ -99,7 +107,7 @@ app.post('/deleteShift', async function (req, res) {
     if(req.beachUserToken) {
         let user = await getUser(req.beachUserToken.email)
         if(user) {
-            let shifts = await deleteShifts(req.body.date, req.beachUserToken.email, user.name, user.color)
+            let shifts = await deleteShifts(req.body.date, req.beachUserToken.email, user.name, user.color, req.body.id)
             if(shifts) {
                 res.status(200).send(JSON.stringify({ ok: true }))
                 broadcast('DELETE_EVENT', shifts)

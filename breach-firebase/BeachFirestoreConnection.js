@@ -1,6 +1,7 @@
 const { admin } = require("./BeachFIrebaseConnection");
 const db = admin.firestore()
 const dayjs = require('dayjs')
+var { v4: uuidv4 } = require('uuid');
 
 module.exports = {
     getShifts: async (dates) => {
@@ -11,31 +12,48 @@ module.exports = {
         })
         return arr
     },
-    getShiftsByDate: async (dateId) => {
-        const snapshot = await db.collection('shifts').doc(dateId).get()
-        return snapshot.data()
+    getShiftsByDate: async (userId, date) => {
+        let dateId = dayjs(date).format("YYYY-MM-DD H:mm").split(' ')
+        let dateKey = dateId[0]
+        let dateHour = dateId[1] 
+
+        const snapshot = await db.collection('shifts').doc(dateKey).get()
+        let shifts = snapshot.data()
+
+        if(shifts && shifts[dateHour]) {
+            let index = shifts[dateHour].findIndex(shift => shift.email == userId)
+            if(index != -1)
+                return shifts[dateHour][index]
+        }
+        return undefined
     },
     addShift: async (date, userId , userName , color) => {
         let dateId = dayjs(date).format("YYYY-MM-DD H:mm").split(' ')
         let dateKey = dateId[0]
         let dateHour = dateId[1] 
         let data = {}
-        data[dateHour] = admin.firestore.FieldValue.arrayUnion({email : userId , name : userName, backgroundColor: color})
+        let event = { email : userId , name : userName, backgroundColor: color, id: uuidv4() }
+        data[dateHour] = admin.firestore.FieldValue.arrayUnion(event)
         let result = await db.collection('shifts').doc(dateKey).set(data, {merge: true})
-        if(result) 
-            return { date: date, title: userName, backgroundColor : color}
+        if(result) {
+            event.date = date
+            event.title = event.name
+            return event
+        }
         else
             return undefined
     },
-    deleteShifts: async (date, userId, userName, color) => {
+    deleteShifts: async (date, userId, userName, color, id) => {
         let dateId = dayjs(date).format("YYYY-MM-DD H:mm").split(' ')
         let dateKey = dateId[0]
         let dateHour = dateId[1] 
         let data = {}
-        data[dateHour] = admin.firestore.FieldValue.arrayRemove({email : userId, name : userName, backgroundColor : color})
+        let event = { email : userId, name : userName, backgroundColor : color, id: id }
+        data[dateHour] = admin.firestore.FieldValue.arrayRemove(event)
         let result = await db.collection('shifts').doc(dateKey).set(data, {merge: true})
+
         if(result) 
-            return { date: date, title: userName }
+            return event
         else
             return undefined
        
