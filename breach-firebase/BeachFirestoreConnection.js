@@ -51,7 +51,6 @@ module.exports = {
         let event = { email : userId, name : userName, backgroundColor : color, id: id }
         data[dateHour] = admin.firestore.FieldValue.arrayRemove(event)
         let result = await db.collection('shifts').doc(dateKey).set(data, {merge: true})
-
         if(result) 
             return event
         else

@@ -92,7 +92,6 @@ app.post('/addShift', async function (req, res) {
                 let shift = await addShift(req.body.date, req.beachUserToken.email, user.name, user.color)
                 if(shift) {
                     res.status(200).send(JSON.stringify({ ok: true, shift: shift }))
-                    console.log('xxx', shift)
                     broadcast('ADD_EVENT', shift)
                 }
             }
@@ -107,12 +106,16 @@ app.post('/deleteShift', async function (req, res) {
     if(req.beachUserToken) {
         let user = await getUser(req.beachUserToken.email)
         if(user) {
-            let shifts = await deleteShifts(req.body.date, req.beachUserToken.email, user.name, user.color, req.body.id)
-            if(shifts) {
-                res.status(200).send(JSON.stringify({ ok: true }))
-                broadcast('DELETE_EVENT', shifts)
+            let isExistsAlready = await getShiftsByDate(req.beachUserToken.email, req.body.date)
+            if(isExistsAlready) {
+                let shifts = await deleteShifts(req.body.date, req.beachUserToken.email, user.name, user.color, req.body.id)
+                if(shifts) {
+                    res.status(200).send(JSON.stringify({ ok: true }))
+                    broadcast('DELETE_EVENT', shifts)
+                }
             }
-              
+            else
+                res.sendStatus(400)
         }
     }
 })
