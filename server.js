@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors')
 const websocket = require('ws');
 const http = require('http');
+const compression = require('compression')
 
 
 const port = process.env.PORT || "4000";
@@ -19,6 +20,8 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json())
 app.use(cors())
+app.use(compression())
+
 
 app.use(function (req, res, next) {
     if(req.cookies["9beachtoken"]) {
