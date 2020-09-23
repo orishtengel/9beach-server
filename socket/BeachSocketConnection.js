@@ -15,7 +15,7 @@ module.exports = {
 
         wsConnection.isAlive = true
         wsConnection.on('pong', () => {
-            ws.isAlive = true;
+            wsConnection.isAlive = true;
         });
 
         wsConnection.on('close', () => {
