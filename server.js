@@ -10,7 +10,7 @@ const compression = require('compression')
 const port = process.env.PORT || "4000";
 
 const { login } = require("./breach-firebase/BeachFIrebaseConnection");
-const { addShift, deleteShifts, getUser, getShifts, addTips, getTips, getShiftsByDate } = require("./breach-firebase/BeachFirestoreConnection");
+const { addShift, deleteShifts, getUser, getShifts, addTips, getTips, getShiftsByDate, getShiftsByDateAndId } = require("./breach-firebase/BeachFirestoreConnection");
 const { createUserToken, decodeToken } = require("./breach-firebase/token");
 const dayjs = require("dayjs");
 const { addConnection, broadcast } = require("./socket/BeachSocketConnection");
@@ -109,7 +109,7 @@ app.post('/deleteShift', async function (req, res) {
     if(req.beachUserToken) {
         let user = await getUser(req.beachUserToken.email)
         if(user) {
-            let isExistsAlready = await getShiftsByDate(req.beachUserToken.email, req.body.date)
+            let isExistsAlready = await getShiftsByDateAndId(req.beachUserToken.email, req.body.date, req.body.id)
             if(isExistsAlready) {
                 let shifts = await deleteShifts(req.body.date, req.beachUserToken.email, user.name, user.color, req.body.id)
                 if(shifts) {
@@ -119,6 +119,33 @@ app.post('/deleteShift', async function (req, res) {
             }
             else
                 res.sendStatus(400)
+        }
+    }
+})
+
+app.get('/getTip', async function (req, res) {
+    if(req.beachUserToken) {
+        let tip = await getTips(req.beachUserToken.email)
+        if(tip) {
+            res.status(200).send(tip)
+        }
+        else {
+            res.sendStatus(400)
+        }
+    }
+    else {
+        res.sendStatus(400)
+    }
+})
+
+app.post('/addTip', async function (req, res) {
+    if(req.beachUserToken) {
+        let writeResult = await addTips(req.body.date, req.beachUserToken.email, req.body.deposit , req.body.tips)
+        if(writeResult) { 
+            res.status(200).send(JSON.stringify({ ok: true }))  
+        }
+        else {
+            res.sendStatus(400)
         }
     }
 })
@@ -150,29 +177,3 @@ httpServer.listen(port, function() {
     console.log(`http/ws server listening on ${port}`);
 });
 
-app.get('/getTip', async function (req, res) {
-    if(req.beachUserToken) {
-        let tip = await getTips(req.beachUserToken.email)
-        if(tip) {
-            res.status(200).send(tip)
-        }
-        else {
-            res.sendStatus(400)
-        }
-    }
-    else {
-        res.sendStatus(400)
-    }
-})
-
-app.post('/addTip', async function (req, res) {
-    if(req.beachUserToken) {
-        let writeResult = await addTips(req.body.date, req.beachUserToken.email, req.body.deposit , req.body.tips)
-        if(writeResult) { 
-            res.status(200).send(JSON.stringify({ ok: true }))  
-        }
-        else {
-            res.sendStatus(400)
-        }
-    }
-})

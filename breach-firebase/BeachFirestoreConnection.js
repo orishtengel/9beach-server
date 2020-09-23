@@ -12,6 +12,21 @@ module.exports = {
         })
         return arr
     },
+    getShiftsByDateAndId: async (userId, date, eventId) => {
+        let dateId = dayjs(date).format("YYYY-MM-DD H:mm").split(' ')
+        let dateKey = dateId[0]
+        let dateHour = dateId[1] 
+
+        const snapshot = await db.collection('shifts').doc(dateKey).get()
+        let shifts = snapshot.data()
+
+        if(shifts && shifts[dateHour]) {
+            let index = shifts[dateHour].findIndex(shift => shift.email == userId && shift.id == eventId)
+            if(index != -1)
+                return shifts[dateHour][index]
+        }
+        return undefined
+    },
     getShiftsByDate: async (userId, date) => {
         let dateId = dayjs(date).format("YYYY-MM-DD H:mm").split(' ')
         let dateKey = dateId[0]
