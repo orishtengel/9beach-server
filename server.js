@@ -122,29 +122,32 @@ wss.on('connection', ( wsConnection ) => {
     addConnection(wsConnection)
 })
 
+setInterval(() => {
+    wss.clients.forEach((ws) => {
+        
+        if (!ws.isAlive) return ws.terminate();
+        
+        ws.isAlive = false;
+        ws.ping(null, false, true);
+    });
+}, 10000);
+
 httpServer.listen(port, function() {
     console.log(`http/ws server listening on ${port}`);
 });
 
 app.get('/getTip', async function (req, res) {
     if(req.beachUserToken) {
-        console.log('xxxx here1')
         let tip = await getTips(req.beachUserToken.email)
-        console.log('xxxx here2')
         if(tip) {
-            console.log('xxxx here3')
             res.status(200).send(tip)
-            console.log('xxxx here4')
         }
         else {
-            console.log('xxxx here5')
             res.sendStatus(400)
-            console.log('xxxx here6')
         }
     }
     else {
-        console.log('xxxx here7')
-        res.status(400)
+        res.sendStatus(400)
     }
 })
 
@@ -155,7 +158,7 @@ app.post('/addTip', async function (req, res) {
             res.status(200).send(JSON.stringify({ ok: true }))  
         }
         else {
-            res.status(400)
+            res.sendStatus(400)
         }
     }
 })

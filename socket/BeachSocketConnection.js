@@ -10,9 +10,13 @@ const clients = {};
 module.exports = {
     addConnection: (wsConnection) => {
         const id = uuidv4();
-        
         clients[id] = wsConnection
         console.log('addding ' + id)
+
+        wsConnection.isAlive = true
+        wsConnection.on('pong', () => {
+            ws.isAlive = true;
+        });
 
         wsConnection.on('close', () => {
             delete clients[id]
@@ -30,6 +34,8 @@ module.exports = {
             }
             catch(e) {
                 console.log(e)
+                console.log('Failed to send to client ' + id + ' removing him rom list')
+                delete clients[id]
             }
         })
     }
