@@ -10,7 +10,7 @@ const compression = require('compression')
 const port = process.env.PORT || "4000";
 
 const { login } = require("./breach-firebase/BeachFIrebaseConnection");
-const { addShift, deleteShifts, getUser, getShifts, addTips, getTips, getShiftsByDate, getShiftsByDateAndId } = require("./breach-firebase/BeachFirestoreConnection");
+const { addShift, deleteShifts, getUser, getShifts, addTips, getTips, getShiftsByDate, getShiftsByDateAndId,getShiftsByDateAndIdWemail,getUsers} = require("./breach-firebase/BeachFirestoreConnection");
 const { createUserToken, decodeToken } = require("./breach-firebase/token");
 const dayjs = require("dayjs");
 const { addConnection, broadcast } = require("./socket/BeachSocketConnection");
@@ -39,8 +39,8 @@ app.post('/login', function (req, res) {
     console.log(req.body)
     login(req.body.email, req.body.password, async (user, error) => {
         if(user) {
-            let token = createUserToken(user);
             let userData = await getUser(req.body.email)
+            let token = createUserToken(req.body.email, userData.name, userData.admin);
             res.cookie('9beachtoken', token)
             res.status(200).send({
                 user: userData,
@@ -65,6 +65,20 @@ app.get('/getUser', async function (req, res) {
     }
 })
 
+
+app.get('/getUsers', async function (req, res) {
+   
+        let arr = []
+        arr = await getUsers()
+        if(arr) {
+            res.status(200).send(arr)
+        }
+        else {
+            res.status(400)
+        }
+    
+})
+
 app.post('/getShifts', async function (req, res) {
     if(req.beachUserToken) {
         let shifts = []
@@ -77,7 +91,8 @@ app.post('/getShifts', async function (req, res) {
                         id: shift.id,
                         title: shift.name,
                         date: dayjs(dateId + " " + keyHour, 'YYYY-MM-DD H:mm'),
-                        backgroundColor : shift.backgroundColor
+                        backgroundColor : shift.backgroundColor,
+                        standby:shift.standby
                     })
                 })
             })
@@ -92,7 +107,7 @@ app.post('/addShift', async function (req, res) {
         if(user) {
             let isExistsAlready = await getShiftsByDate(req.beachUserToken.email, req.body.date)
             if(!isExistsAlready) {
-                let shift = await addShift(req.body.date, req.beachUserToken.email, user.name, user.color)
+                let shift = await addShift(req.body.date, req.beachUserToken.email, user.name, user.color,req.body.standby)
                 if(shift) {
                     res.status(200).send(JSON.stringify({ ok: true, shift: shift }))
                     broadcast('ADD_EVENT', shift)
@@ -105,13 +120,35 @@ app.post('/addShift', async function (req, res) {
     }
 })
 
+app.post('/addShiftAdmin', async function (req, res) {
+    if(req.beachUserToken.admin) {
+        let user = await getUser(req.body.userId)
+        if(user) {
+            let isExistsAlready = await getShiftsByDate(req.body.userId, req.body.date)
+            if(!isExistsAlready) {
+                let shift = await addShift(req.body.date, req.body.userId, user.name, user.color,req.body.standby)
+                if(shift) {
+                    res.status(200).send(JSON.stringify({ ok: true, shift: shift }))
+                    broadcast('ADD_EVENT', shift)
+                }
+            }
+            else {
+                res.sendStatus(400)
+            }
+        }
+    }
+    else
+        res.sendStatus(401)
+})
+
 app.post('/deleteShift', async function (req, res) {
     if(req.beachUserToken) {
         let user = await getUser(req.beachUserToken.email)
-        if(user) {
-            let isExistsAlready = await getShiftsByDateAndId(req.beachUserToken.email, req.body.date, req.body.id)
+        let shift = await getShiftsByDateAndIdWemail(req.body.date,req.body.id)
+        if(req.beachUserToken.admin){
+            let isExistsAlready = await getShiftsByDateAndId(shift.email, req.body.date, req.body.id)
             if(isExistsAlready) {
-                let shifts = await deleteShifts(req.body.date, req.beachUserToken.email, user.name, user.color, req.body.id)
+                let shifts = await deleteShifts(req.body.date, shift.email, shift.name, shift.backgroundColor, shift.id,shift.standby)
                 if(shifts) {
                     res.status(200).send(JSON.stringify({ ok: true }))
                     broadcast('DELETE_EVENT', shifts)
@@ -120,6 +157,20 @@ app.post('/deleteShift', async function (req, res) {
             else
                 res.sendStatus(400)
         }
+        else if(user) {
+            let isExistsAlready = await getShiftsByDateAndId(req.beachUserToken.email, req.body.date, req.body.id)
+            if(isExistsAlready) {
+                let shifts = await deleteShifts(req.body.date, req.beachUserToken.email, user.name, user.color, req.body.id,shift.standby)
+                if(shifts) {
+                    res.status(200).send(JSON.stringify({ ok: true }))
+                    broadcast('DELETE_EVENT', shifts)
+                }
+            }
+            else
+                res.sendStatus(400)
+        }
+        else
+            res.sendStatus(400)
     }
 })
 
@@ -155,6 +206,8 @@ app.post('/addTip', async function (req, res) {
 //     console.log('Express server listening on port', port)
 
 // });
+
+
 
 const httpServer = http.createServer(app);
 const wss = new websocket.Server({ server: httpServer });
