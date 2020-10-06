@@ -2,6 +2,7 @@ const { admin } = require("./BeachFIrebaseConnection");
 const db = admin.firestore()
 const dayjs = require('dayjs')
 var { v4: uuidv4 } = require('uuid');
+const { DATE_FORMAT } = require("../consts");
 
 module.exports = {
     getShifts: async (dates) => {
@@ -13,7 +14,7 @@ module.exports = {
         return arr
     },
     getShiftsByDateAndId: async (userId, date, eventId) => {
-        let dateId = dayjs(date).format("YYYY-MM-DD H:mm").split(' ')
+        let dateId = dayjs(date, DATE_FORMAT).format("YYYY-MM-DD H:mm Z").split(' ')
         let dateKey = dateId[0]
         let dateHour = dateId[1] 
 
@@ -29,13 +30,11 @@ module.exports = {
     },
 
     getShiftsByDateAndIdWemail: async ( date, eventId) => {
-        let dateId = dayjs(date).format("YYYY-MM-DD H:mm").split(' ')
+        let dateId = dayjs(date, DATE_FORMAT).format("YYYY-MM-DD H:mm").split(' ')
         let dateKey = dateId[0]
         let dateHour = dateId[1] 
-
         const snapshot = await db.collection('shifts').doc(dateKey).get()
         let shifts = snapshot.data()
-
         if(shifts && shifts[dateHour]) {
             let index = shifts[dateHour].findIndex(shift => shift.id == eventId)
             if(index != -1)
@@ -46,7 +45,7 @@ module.exports = {
 
 
     getShiftsByDate: async (userId, date) => {
-        let dateId = dayjs(date).format("YYYY-MM-DD H:mm").split(' ')
+        let dateId = dayjs(date, DATE_FORMAT).format("YYYY-MM-DD H:mm").split(' ')
         let dateKey = dateId[0]
         let dateHour = dateId[1] 
 
@@ -61,7 +60,7 @@ module.exports = {
         return undefined
     },
     addShift: async (date, userId , userName , color, standby) => {
-        let dateId = dayjs(date).format("YYYY-MM-DD H:mm").split(' ')
+        let dateId = dayjs(date, DATE_FORMAT).format("YYYY-MM-DD H:mm").split(' ')
         let dateKey = dateId[0]
         let dateHour = dateId[1] 
         let data = {}
@@ -76,8 +75,27 @@ module.exports = {
         else
             return undefined
     },
+
+    // changeStandBy: async(date,userId,userName,color,id,standby)=>{
+    //      let data = this.getShiftsByDate(userId,date)
+    //      let dateId = dayjs(date).format("YYYY-MM-DD H:mm").split(' ')
+    //      let dateKey = dateId[0]
+    //      let dateHour = dateId[1] 
+    //      let change = false
+    //      if (data.standby)
+    //          let change = false
+    //     else
+    //         change=true
+    //     let result = await db.collection('shifts').doc(dateKey)[dateHour].standby.set(standby,{merge:true})
+    //     if (result)
+    //     {
+
+    //     }
+
+    // },
+
     deleteShifts: async (date, userId, userName, color, id,standby) => {
-        let dateId = dayjs(date).format("YYYY-MM-DD H:mm").split(' ')
+        let dateId = dayjs(date, DATE_FORMAT).format("YYYY-MM-DD H:mm").split(' ')
         let dateKey = dateId[0]
         let dateHour = dateId[1] 
         let data = {}
@@ -105,7 +123,7 @@ module.exports = {
         
     },
     addTips: async(date, userId, deposit, tip) => {
-        let dateId = dayjs(date).format("YYYY-MM-DD")
+        let dateId = dayjs(date, DATE_FORMAT).format("YYYY-MM-DD")
         let data = { }
         data[dateId] = {deposit: deposit, tip: tip}
         return await db.collection('tips').doc(userId).set(data, {merge: true})
