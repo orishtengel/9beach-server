@@ -14,6 +14,7 @@ const { addShift, deleteShifts, getUser, getShifts, addTips, getTips, getShiftsB
 const { createUserToken, decodeToken } = require("./breach-firebase/token");
 const dayjs = require("dayjs");
 const { addConnection, broadcast } = require("./socket/BeachSocketConnection");
+const { facebookLogin } = require("./auth/login");
 
 const app = express();
 app.use(cookieParser());
@@ -34,6 +35,20 @@ app.use(function (req, res, next) {
 
 })
 
+app.post('/facebookLogin', async function(req, res) {
+    let user = await facebookLogin(req.body.email, req.body.name, req.body.picture)
+    console.log(user)
+    if(user) {
+        let token = createUserToken(req.body.email, user.name, user.admin);
+        res.cookie('9beachtoken', token)
+        res.status(200).send({
+            user: user,
+            token: token
+        })
+    }
+    else 
+        res.status(401).send(JSON.stringify('Not Autorized'));
+})
 
 app.post('/login', function (req, res) {
     console.log(req.body)
@@ -92,7 +107,8 @@ app.post('/getShifts', async function (req, res) {
                         title: shift.name,
                         date: dayjs(dateId + " " + keyHour, 'YYYY-MM-DD H:mm'),
                         backgroundColor : shift.backgroundColor,
-                        standby:shift.standby
+                        standby:shift.standby,
+                        email: shift.email
                     })
                 })
             })

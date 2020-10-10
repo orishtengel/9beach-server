@@ -3,6 +3,7 @@ const db = admin.firestore()
 const dayjs = require('dayjs')
 var { v4: uuidv4 } = require('uuid');
 const { DATE_FORMAT } = require("../consts");
+const { generateRandomColor } = require("../utils/colorutils");
 
 module.exports = {
     getShifts: async (dates) => {
@@ -93,7 +94,17 @@ module.exports = {
     //     }
 
     // },
-
+    isFacebookAuthorized: async (name) => {
+        let id = name.toLowerCase().replace(' ', '')
+        const snapshot = await db.collection('facebookNames').doc(id).get()
+        return snapshot.data()
+    },
+    createUser: async (name, email, picture) => {
+        await db.collection('users').doc(email).create({name: name.toLowerCase(),
+             color: generateRandomColor(),
+             admin: false,
+             picture: picture})
+    },
     deleteShifts: async (date, userId, userName, color, id,standby) => {
         let dateId = dayjs(date, DATE_FORMAT).format("YYYY-MM-DD H:mm").split(' ')
         let dateKey = dateId[0]
@@ -106,7 +117,6 @@ module.exports = {
             return event
         else
             return undefined
-       
     },
     getUser: async (userId) => {
         const snapshot = await db.collection('users').doc(userId).get()
