@@ -5,6 +5,7 @@ const cors = require('cors')
 const websocket = require('ws');
 const http = require('http');
 const compression = require('compression')
+const fs = require('fs')
 
 const port = process.env.PORT || "4000";
 
@@ -21,7 +22,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json())
 app.use(cors())
 app.use(compression())
-
+app.use(express.static('public'))
 
 app.use(function (req, res, next) {
     if(req.cookies["9beachtoken"]) {
@@ -216,13 +217,6 @@ app.post('/addTip', async function (req, res) {
     }
 })
 
-app.get('/privacy-policy', (req, res) => {
-    res.sendFile('public/privacy-policy')
-})
-
-app.get('/terms-and-conditions', (req, res) => {
-    res.sendFile('public/terms-and-conditions')
-})
 
 // Start the server on port 3000
 // app.listen(port, () => {
