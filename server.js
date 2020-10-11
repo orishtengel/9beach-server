@@ -6,7 +6,6 @@ const websocket = require('ws');
 const http = require('http');
 const compression = require('compression')
 
-
 const port = process.env.PORT || "4000";
 
 const { login } = require("./breach-firebase/BeachFIrebaseConnection");
@@ -217,7 +216,13 @@ app.post('/addTip', async function (req, res) {
     }
 })
 
+app.get('/privacy-policy', (req, res) => {
+    res.sendFile('public/privacy-policy')
+})
 
+app.get('/terms-and-conditions', (req, res) => {
+    res.sendFile('public/terms-and-conditions')
+})
 
 // Start the server on port 3000
 // app.listen(port, () => {
