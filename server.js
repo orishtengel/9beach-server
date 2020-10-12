@@ -82,7 +82,7 @@ app.get('/getUser', async function (req, res) {
 
 
 app.get('/getUsers', async function (req, res) {
-   
+   if(req.beachUserToken){
         let arr = []
         arr = await getUsers()
         if(arr) {
@@ -91,6 +91,7 @@ app.get('/getUsers', async function (req, res) {
         else {
             res.status(400)
         }
+    }
     
 })
 
