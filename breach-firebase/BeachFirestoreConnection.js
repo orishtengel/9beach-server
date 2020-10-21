@@ -152,7 +152,7 @@ module.exports = {
     deleteUser: async (userId) => {  
         let result = await db.collection('users').doc(userId).delete()
         if(result) 
-            return user
+            return true
         else
             return undefined
     },
