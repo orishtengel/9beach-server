@@ -141,37 +141,32 @@ module.exports = {
 
     },
 
-    addFacebookName: async (name) =>{
-        let data = []
-        let user = {name:name}
-        data = admin.firestore.FieldValue.arrayUnion(user)
-        let result = await db.collection('facebookNames').set(data, {merge: true})
+    addFacebookName: async (name) => {
+        let result = await db.collection('facebookNames').doc(name).create({})
         if(result) 
-            return user
+            return true
         else
             return undefined
     },
-    deleteUser: async (userId,userName,admin,color,picture) =>{
-        let data = []
+
+    deleteUser: async (userId,userName,admin,color,picture) => {
+        
         let user = {admin: admin, color : color, name : userName, picture : picture}
-        data = admin.firestore.FieldValue.arrayRemove(user)
-        let result = await db.collection('users').doc(userId).set(data, {merge: true})
-        if(result) 
-            return user
-        else
-            return undefined
-    },
-    deleteFacebookName: async (name) =>{
-        let data = []
-        let user = { name : name}
-        data = admin.firestore.FieldValue.arrayRemove(user)
-        let result = await db.collection('facebookNames').set(data, {merge: true})
+        
+        let result = await db.collection('users').doc(userId).delete()
         if(result) 
             return user
         else
             return undefined
     },
 
+    deleteFacebookName: async (name) => {
+        let result = await db.collection('facebookNames').doc(name).delete()
+        if(result) 
+            return true
+        else
+            return undefined
+    },
 
     addTips: async(date, userId, deposit, tip) => {
         let dateId = dayjs(date, DATE_FORMAT).format("YYYY-MM-DD")
