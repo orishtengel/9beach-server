@@ -10,7 +10,7 @@ const fs = require('fs')
 const port = process.env.PORT || "4000";
 
 const { login } = require("./breach-firebase/BeachFIrebaseConnection");
-const { addShift, deleteShifts, getUser, getShifts, addTips, getTips, getShiftsByDate, getShiftsByDateAndId,getShiftsByDateAndIdWemail,getUsers, changeStandBy} = require("./breach-firebase/BeachFirestoreConnection");
+const { addShift, deleteShifts, getUser, getShifts, addTips, getTips, getShiftsByDate, getShiftsByDateAndId,getShiftsByDateAndIdWemail,getUsers, changeStandBy, addFacebookName, deleteUser, deleteFacebookName} = require("./breach-firebase/BeachFirestoreConnection");
 const { createUserToken, decodeToken } = require("./breach-firebase/token");
 const dayjs = require("dayjs");
 const { addConnection, broadcast } = require("./socket/BeachSocketConnection");
@@ -215,6 +215,44 @@ app.post('/addTip', async function (req, res) {
         else {
             res.sendStatus(400)
         }
+    }
+})
+
+app.post('/addFacebookName', async function (req, res) {
+    if(req.beachUserToken.admin) {
+        let writeResult = await addFacebookName(req.body.name)
+        if(writeResult) { 
+            res.status(200).send(JSON.stringify({ ok: true }))  
+        }
+        else {
+            res.sendStatus(400)
+        }
+    }
+})
+
+app.post('/deleteUser',async function (req,res){
+    if(req.beachUserToken.admin){
+        let user = getUser(req.body.userId)
+        let userdelete = await deleteUser(req.body.id,user.admin, user.color, user.name,user.picture)
+        if(userdelete) {
+            res.status(200).send(JSON.stringify({ ok: true }))
+            // broadcast('DELETE_EVENT', shifts)
+        }
+    else
+        res.sendStatus(400)
+    }
+})
+
+app.post('/deleteFacebookName',async function (req,res){
+    if(req.beachUserToken.admin){
+        
+        let facebookNameDelete = await deleteFacebookName(req.body.name)
+        if(userdelete) {
+            res.status(200).send(JSON.stringify({ ok: true }))
+            // broadcast('DELETE_EVENT', shifts)
+        }
+    else
+        res.sendStatus(400)
     }
 })
 

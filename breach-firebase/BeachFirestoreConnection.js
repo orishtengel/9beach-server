@@ -122,7 +122,6 @@ module.exports = {
         const snapshot = await db.collection('users').doc(userId).get()
         return snapshot.data()
     },
-
     getUsers: async () => {
         const snapshot = await db.collection('users').get()
         let arr = {}
@@ -132,6 +131,48 @@ module.exports = {
         return arr
         
     },
+    getFacebookName: async () =>{
+        const snapshot = await db.collection('users').get()
+        let arr = {}
+        snapshot.forEach(doc => {
+            arr[doc.ref.id] = doc.data()
+        })
+        return arr
+
+    },
+
+    addFacebookName: async (name) =>{
+        let data = []
+        let user = {name:name}
+        data = admin.firestore.FieldValue.arrayUnion(user)
+        let result = await db.collection('facebookNames').set(data, {merge: true})
+        if(result) 
+            return user
+        else
+            return undefined
+    },
+    deleteUser: async (userId,userName,admin,color,picture) =>{
+        let data = []
+        let user = {admin: admin, color : color, name : userName, picture : picture}
+        data = admin.firestore.FieldValue.arrayRemove(user)
+        let result = await db.collection('users').doc(userId).set(data, {merge: true})
+        if(result) 
+            return user
+        else
+            return undefined
+    },
+    deleteFacebookName: async (name) =>{
+        let data = []
+        let user = { name : name}
+        data = admin.firestore.FieldValue.arrayRemove(user)
+        let result = await db.collection('facebookNames').set(data, {merge: true})
+        if(result) 
+            return user
+        else
+            return undefined
+    },
+
+
     addTips: async(date, userId, deposit, tip) => {
         let dateId = dayjs(date, DATE_FORMAT).format("YYYY-MM-DD")
         let data = { }
@@ -143,6 +184,8 @@ module.exports = {
         let data = await snapshot.data()
         return data
     }
+
+    
     
     
     
