@@ -220,6 +220,7 @@ app.post('/addTip', async function (req, res) {
 
 app.post('/addFacebookName', async function (req, res) {
     if(req.beachUserToken.admin) {
+        console.log(req.body.name)
         let writeResult = await addFacebookName(req.body.name)
         if(writeResult) { 
             res.status(200).send(JSON.stringify({ ok: true }))  
@@ -233,7 +234,7 @@ app.post('/addFacebookName', async function (req, res) {
 app.post('/deleteUser',async function (req,res){
     if(req.beachUserToken.admin){
         let user = getUser(req.body.userId)
-        let userdelete = await deleteUser(req.body.id,user.admin, user.color, user.name,user.picture)
+        let userdelete = await deleteUser(req.body.id,user.admin, user.color, user.name , user.picture)
         if(userdelete) {
             res.status(200).send(JSON.stringify({ ok: true }))
             // broadcast('DELETE_EVENT', shifts)
@@ -247,7 +248,7 @@ app.post('/deleteFacebookName',async function (req,res){
     if(req.beachUserToken.admin){
         
         let facebookNameDelete = await deleteFacebookName(req.body.name)
-        if(userdelete) {
+        if(facebookNameDelete) {
             res.status(200).send(JSON.stringify({ ok: true }))
             // broadcast('DELETE_EVENT', shifts)
         }
