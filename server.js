@@ -233,7 +233,7 @@ app.post('/addFacebookName', async function (req, res) {
 
 app.post('/deleteUser',async function (req,res){
     if(req.beachUserToken.admin){
-        let userdelete = await deleteUser(req.body.id)
+        let userdelete = await deleteUser(req.body.userId)
         if(userdelete) {
             res.status(200).send(JSON.stringify({ ok: true }))
             // broadcast('DELETE_EVENT', shifts)
