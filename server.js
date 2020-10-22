@@ -144,19 +144,24 @@ app.post('/addShift', async function (req, res) {
 
 app.post('/addShiftAdmin', async function (req, res) {
     if(req.beachUserToken.admin) {
-        let user = await getUser(req.body.userId)
-        if(user) {
-            let isExistsAlready = await getShiftsByDate(req.body.userId, req.body.date)
-            if(!isExistsAlready) {
-                let shift = await addShift(req.body.date, req.body.userId, user.name, user.color,req.body.standby)
-                if(shift) {
-                    res.status(200).send(JSON.stringify({ ok: true, shift: shift }))
-                    broadcast('ADD_EVENT', shift)
+        if(req.body.date < dayjs().add(-7)) {
+            let user = await getUser(req.body.userId)
+            if(user) {
+                let isExistsAlready = await getShiftsByDate(req.body.userId, req.body.date)
+                if(!isExistsAlready) {
+                    let shift = await addShift(req.body.date, req.body.userId, user.name, user.color,req.body.standby)
+                    if(shift) {
+                        res.status(200).send(JSON.stringify({ ok: true, shift: shift }))
+                        broadcast('ADD_EVENT', shift)
+                    }
+                }
+                else {
+                    res.sendStatus(400)
                 }
             }
-            else {
-                res.sendStatus(400)
-            }
+        }
+        else {
+            res.sendStatus(400)
         }
     }
     else
@@ -168,28 +173,40 @@ app.post('/deleteShift', async function (req, res) {
         let user = await getUser(req.beachUserToken.email)
         let shift = await getShiftsByDateAndIdWemail(req.body.date,req.body.id)
         if(req.beachUserToken.admin){
-            let isExistsAlready = await getShiftsByDateAndId(shift.email, req.body.date, req.body.id)
-            if(isExistsAlready) {
-                let shifts = await deleteShifts(req.body.date, shift.email, shift.name, shift.backgroundColor, shift.id,shift.standby)
-                if(shifts) {
-                    res.status(200).send(JSON.stringify({ ok: true }))
-                    broadcast('DELETE_EVENT', shifts)
+            if(req.body.date > dayjs().add(-7,'day').format('YYYY-MM-DD')) {
+                let isExistsAlready = await getShiftsByDateAndId(shift.email, req.body.date, req.body.id)
+                if(isExistsAlready) {
+                    let shifts = await deleteShifts(req.body.date, shift.email, shift.name, shift.backgroundColor, shift.id,shift.standby)
+                    if(shifts) {
+                        res.status(200).send(JSON.stringify({ ok: true }))
+                        broadcast('DELETE_EVENT', shifts)
+                    }
                 }
+                else
+                    res.sendStatus(400)
             }
-            else
+            else {
                 res.sendStatus(400)
+            }
+
         }
         else if(user) {
-            let isExistsAlready = await getShiftsByDateAndId(req.beachUserToken.email, req.body.date, req.body.id)
-            if(isExistsAlready) {
-                let shifts = await deleteShifts(req.body.date, req.beachUserToken.email, user.name, user.color, req.body.id,shift.standby)
-                if(shifts) {
-                    res.status(200).send(JSON.stringify({ ok: true }))
-                    broadcast('DELETE_EVENT', shifts)
+            if(req.body.date > dayjs().add(-1,'day').format('YYYY-MM-DD') && req.body.date < dayjs().day(6).add(8,'day').format('YYYY-MM-DD') && req.body.date > dayjs().day(6).format('YYYY-MM-DD')) {
+                let isExistsAlready = await getShiftsByDateAndId(req.beachUserToken.email, req.body.date, req.body.id)
+                if(isExistsAlready) {
+                    let shifts = await deleteShifts(req.body.date, req.beachUserToken.email, user.name, user.color, req.body.id,shift.standby)
+                    if(shifts) {
+                        res.status(200).send(JSON.stringify({ ok: true }))
+                        broadcast('DELETE_EVENT', shifts)
+                    }
                 }
+                else
+                    res.sendStatus(400)
+
             }
-            else
+            else {
                 res.sendStatus(400)
+            }
         }
         else
             res.sendStatus(400)
