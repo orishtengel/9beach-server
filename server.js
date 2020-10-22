@@ -120,19 +120,25 @@ app.post('/getShifts', async function (req, res) {
 
 app.post('/addShift', async function (req, res) {
     if(req.beachUserToken) {
-        let user = await getUser(req.beachUserToken.email)
-        if(user) {
-            let isExistsAlready = await getShiftsByDate(req.beachUserToken.email, req.body.date)
-            if(!isExistsAlready) {
-                let shift = await addShift(req.body.date, req.beachUserToken.email, user.name, user.color,req.body.standby)
-                if(shift) {
-                    res.status(200).send(JSON.stringify({ ok: true, shift: shift }))
-                    broadcast('ADD_EVENT', shift)
-                }
+            if(req.body.date > daygjs().add(-1,'day').format('YYYY-MM-DD') && req.body.date < dayjs().day(6).add(8,'day').format('YYYY-MM-DD') && req.body.date > dayjs().day(6).format('YYYY-MM-DD')) {  
+                let user = await getUser(req.beachUserToken.email)
+                if(user) {
+                    let isExistsAlready = await getShiftsByDate(req.beachUserToken.email, req.body.date)
+                    if(!isExistsAlready) {
+                        let shift = await addShift(req.body.date, req.beachUserToken.email, user.name, user.color,req.body.standby)
+                        if(shift) {
+                            res.status(200).send(JSON.stringify({ ok: true, shift: shift }))
+                            broadcast('ADD_EVENT', shift)
+                        }
+                    }
+                    else {
+                        res.sendStatus(400)
+                    }
             }
             else {
                 res.sendStatus(400)
             }
+
         }
     }
 })
@@ -233,10 +239,12 @@ app.post('/addFacebookName', async function (req, res) {
 
 app.post('/deleteUser',async function (req,res){
     if(req.beachUserToken.admin){
+        
         let userdelete = await deleteUser(req.body.userId)
+        //let users = getUsers()
         if(userdelete) {
             res.status(200).send(JSON.stringify({ ok: true }))
-            // broadcast('DELETE_EVENT', shifts)
+            //broadcast('DELETE_USERS', users)
         }
     else
         res.sendStatus(400)
@@ -245,7 +253,6 @@ app.post('/deleteUser',async function (req,res){
 
 app.post('/deleteFacebookName',async function (req,res){
     if(req.beachUserToken.admin){
-        
         let facebookNameDelete = await deleteFacebookName(req.body.name)
         if(facebookNameDelete) {
             res.status(200).send(JSON.stringify({ ok: true }))
@@ -286,3 +293,15 @@ httpServer.listen(port, function() {
     console.log(`http/ws server listening on ${port}`);
 });
 
+//let date = dayjs("2020-11-02")
+//
+// date < new Date() // everyone 
+// // CANT -- only if not admin
+// for (let  i=0; i<=6;i++) {
+//     console.log(dayjs().day(i).format('YYYY-MM-DD'))
+// }
+
+
+// // lock - which days to lock ?
+
+// new Date () - 1 <  date < dayjs(0) + 7 // add 7 days, first day of first week
