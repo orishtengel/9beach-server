@@ -120,7 +120,7 @@ app.post('/getShifts', async function (req, res) {
 
 app.post('/addShift', async function (req, res) {
     if(req.beachUserToken) {
-            if(req.body.date > dayjs().add(-1,'day').format('YYYY-MM-DD') && req.body.date < dayjs().day(6).add(8,'day').format('YYYY-MM-DD') && req.body.date > dayjs().day(6).format('YYYY-MM-DD')) {  
+            if(req.body.date > dayjs().add(-1,'day').format('YYYY-MM-DD') || req.body.date < dayjs().day(6).add(8,'day').format('YYYY-MM-DD') || req.body.date > dayjs().day(6).format('YYYY-MM-DD')) {  
                 let user = await getUser(req.beachUserToken.email)
                 if(user) {
                     let isExistsAlready = await getShiftsByDate(req.beachUserToken.email, req.body.date)
