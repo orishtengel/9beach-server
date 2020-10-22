@@ -144,7 +144,7 @@ app.post('/addShift', async function (req, res) {
 
 app.post('/addShiftAdmin', async function (req, res) {
     if(req.beachUserToken.admin) {
-        if(req.body.date < dayjs().day(0).add(-7,'day').format('YYYY-MM-DD')) {
+        if(req.body.date > dayjs().day(0).add(-7,'day').format('YYYY-MM-DD')) {
             let user = await getUser(req.body.userId)
             if(user) {
                 let isExistsAlready = await getShiftsByDate(req.body.userId, req.body.date)
