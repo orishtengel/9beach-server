@@ -144,7 +144,7 @@ app.post('/addShift', async function (req, res) {
 
 app.post('/addShiftAdmin', async function (req, res) {
     if(req.beachUserToken.admin) {
-        if(req.body.date < dayjs().day(0).add(-8,'day').format('YYYY-MM-DD')) {
+        if(req.body.date < dayjs().day(0).add(-7,'day').format('YYYY-MM-DD')) {
             let user = await getUser(req.body.userId)
             if(user) {
                 let isExistsAlready = await getShiftsByDate(req.body.userId, req.body.date)
@@ -173,7 +173,7 @@ app.post('/deleteShift', async function (req, res) {
         let user = await getUser(req.beachUserToken.email)
         let shift = await getShiftsByDateAndIdWemail(req.body.date,req.body.id)
         if(req.beachUserToken.admin){
-            if(req.body.date > dayjs().day(0).add(-8,'day').format('YYYY-MM-DD')) {
+            if(req.body.date > dayjs().day(0).add(-7,'day').format('YYYY-MM-DD')) {
                 let isExistsAlready = await getShiftsByDateAndId(shift.email, req.body.date, req.body.id)
                 if(isExistsAlready) {
                     let shifts = await deleteShifts(req.body.date, shift.email, shift.name, shift.backgroundColor, shift.id,shift.standby)
