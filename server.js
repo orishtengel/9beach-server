@@ -15,6 +15,9 @@ const { createUserToken, decodeToken } = require("./breach-firebase/token");
 const dayjs = require("dayjs");
 const { addConnection, broadcast } = require("./socket/BeachSocketConnection");
 const { facebookLogin } = require("./auth/login");
+const daycheck = require("./utils/daycheck");
+const { isbefore } = require("../utils/daychecck");
+const { isafterweek, isthisweek, isbeforelastweek } = require("./utils/daycheck");
 
 const app = express();
 app.use(cookieParser());
@@ -120,7 +123,7 @@ app.post('/getShifts', async function (req, res) {
 
 app.post('/addShift', async function (req, res) {
     if(req.beachUserToken) {
-            if(req.body.date > dayjs().add(-1,'day').format('YYYY-MM-DD') && req.body.date < dayjs().day(6).add(8,'day').format('YYYY-MM-DD') && req.body.date > dayjs().day(7).format('YYYY-MM-DD')) {  
+        if(req.body.date > isbefore() && req.body.date < isafterweek() && req.body.date > isthisweek()) {  
                 let user = await getUser(req.beachUserToken.email)
                 if(user) {
                     let isExistsAlready = await getShiftsByDate(req.beachUserToken.email, req.body.date)
@@ -137,14 +140,14 @@ app.post('/addShift', async function (req, res) {
             }
         }
         else {
-            res.sendStatus(400)
+            res.status(400).send({error: 'can\'t add shift in this date, only in the next week'})
         }
     }
 })
 
 app.post('/addShiftAdmin', async function (req, res) {
     if(req.beachUserToken.admin) {
-        if(req.body.date > dayjs().day(0).add(-7,'day').format('YYYY-MM-DD')) {
+        if(req.body.date > isbeforelastweek()) {
             let user = await getUser(req.body.userId)
             if(user) {
                 let isExistsAlready = await getShiftsByDate(req.body.userId, req.body.date)
@@ -161,7 +164,7 @@ app.post('/addShiftAdmin', async function (req, res) {
             }
         }
         else {
-            res.sendStatus(400)
+            res.status(400).send({error: 'This shift is too old. can\'t be added'})
         }
     }
     else
@@ -174,7 +177,7 @@ app.post('/deleteShift', async function (req, res) {
         let shift = await getShiftsByDateAndIdWemail(req.body.date,req.body.id)
         if(req.beachUserToken.admin){
             // Check last week 
-            if(req.body.date > dayjs().day(0).add(-7,'day').format('YYYY-MM-DD')) {
+            if(req.body.date > isbeforelastweek()) {
                 let isExistsAlready = await getShiftsByDateAndId(shift.email, req.body.date, req.body.id)
                 if(isExistsAlready) {
                     let shifts = await deleteShifts(req.body.date, shift.email, shift.name, shift.backgroundColor, shift.id,shift.standby)
@@ -192,7 +195,7 @@ app.post('/deleteShift', async function (req, res) {
 
         }
         else if(user) {
-            if(req.body.date > dayjs().add(-1,'day').format('YYYY-MM-DD') && req.body.date < dayjs().day(6).add(8,'day').format('YYYY-MM-DD') && req.body.date > dayjs().day(7).format('YYYY-MM-DD')) {
+            if(req.body.date > isbefore() && req.body.date < isafterweek() && req.body.date > isthisweek()) {
                 let isExistsAlready = await getShiftsByDateAndId(req.beachUserToken.email, req.body.date, req.body.id)
                 if(isExistsAlready) {
                     let shifts = await deleteShifts(req.body.date, req.beachUserToken.email, user.name, user.color, req.body.id,shift.standby)
@@ -206,7 +209,7 @@ app.post('/deleteShift', async function (req, res) {
 
             }
             else {
-                res.sendStatus(400)
+                res.status(400).send({error: 'can\'t add shift in this date, only in the next week'})
             }
         }
         else
