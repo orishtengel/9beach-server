@@ -173,6 +173,7 @@ app.post('/deleteShift', async function (req, res) {
         let user = await getUser(req.beachUserToken.email)
         let shift = await getShiftsByDateAndIdWemail(req.body.date,req.body.id)
         if(req.beachUserToken.admin){
+            // Check last week 
             if(req.body.date > dayjs().day(0).add(-7,'day').format('YYYY-MM-DD')) {
                 let isExistsAlready = await getShiftsByDateAndId(shift.email, req.body.date, req.body.id)
                 if(isExistsAlready) {
@@ -186,7 +187,7 @@ app.post('/deleteShift', async function (req, res) {
                     res.sendStatus(400)
             }
             else {
-                res.sendStatus(400)
+                res.status(400).send({error: 'This shift is too old. can\'t be deleted'})
             }
 
         }
@@ -235,7 +236,7 @@ app.post('/getAdminTip', async function (req, res) {
             res.status(200).send(tip)
         }
         else {
-            res.sendStatus(400)
+            res.status(200).send([])
         }
     }
     else {
