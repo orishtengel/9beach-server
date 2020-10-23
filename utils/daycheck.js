@@ -1,3 +1,4 @@
+const dayjs = require("dayjs");
 
 module.exports = {
     isbefore : () => {
@@ -19,5 +20,4 @@ module.exports = {
         var date = dayjs().day(0).add(-7,'day').format('YYYY-MM-DD');
         return date;
     }
-
 }
