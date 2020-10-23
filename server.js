@@ -228,6 +228,21 @@ app.get('/getTip', async function (req, res) {
     }
 })
 
+app.get('/getAdminTip', async function (req, res) {
+    if(req.beachUserToken.admin) {
+        let tip = await getTips(req.body.email)
+        if(tip) {
+            res.status(200).send(tip)
+        }
+        else {
+            res.sendStatus(400)
+        }
+    }
+    else {
+        res.sendStatus(400)
+    }
+})
+
 app.post('/addTip', async function (req, res) {
     if(req.beachUserToken) {
         let writeResult = await addTips(req.body.date, req.beachUserToken.email, req.body.deposit , req.body.tips)
