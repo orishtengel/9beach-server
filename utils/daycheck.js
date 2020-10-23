@@ -1,19 +1,23 @@
 
 module.exports = {
     isbefore : () => {
-        return dayjs().add(-1,'day').format('YYYY-MM-DD')
+        var date = dayjs().add(-1,'day').format('YYYY-MM-DD');
+        return date;
     },
 
     isafterweek : () => {
-        return dayjs().day(6).add(8,'day').format('YYYY-MM-DD')
+        var date = dayjs().day(6).add(8,'day').format('YYYY-MM-DD');
+        return date;
     },
 
     isthisweek : () => {
-        return dayjs().day(7).format('YYYY-MM-DD')
+        var date = dayjs().day(7).format('YYYY-MM-DD');
+        return date;
     },
 
     isbeforelastweek : () => {
-        return dayjs().day(0).add(-7,'day').format('YYYY-MM-DD')
+        var date = dayjs().day(0).add(-7,'day').format('YYYY-MM-DD');
+        return date;
     }
 
 }

@@ -15,9 +15,7 @@ const { createUserToken, decodeToken } = require("./breach-firebase/token");
 const dayjs = require("dayjs");
 const { addConnection, broadcast } = require("./socket/BeachSocketConnection");
 const { facebookLogin } = require("./auth/login");
-const daycheck = require("./utils/daycheck");
-const { isbefore } = require("../utils/daychecck");
-const { isafterweek, isthisweek, isbeforelastweek } = require("./utils/daycheck");
+const { isafterweek, isthisweek, isbeforelastweek ,isbefore } = require("./utils/daycheck");
 
 const app = express();
 app.use(cookieParser());
