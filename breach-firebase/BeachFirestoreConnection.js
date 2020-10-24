@@ -171,11 +171,36 @@ module.exports = {
         data[dateId] = {deposit: deposit, tip: tip}
         return await db.collection('tips').doc(userId).set(data, {merge: true})
     },
+
     getTips: async (userId) => {
         let snapshot = await db.collection('tips').doc(userId).get()
         let data = await snapshot.data()
         return data
-    }
+    },
+
+    //add lock to manger 
+    setLocktrue: async(date) => {
+        let dateId = dayjs(date, DATE_FORMAT).format("YYYY-MM-DD")
+        let data = { }
+        data[dateId] = { islock : true }
+        return await db.collection('lock').doc(dateId).set(data, {merge: true})
+    }, 
+
+    setLockfalse: async(date) => {
+        let dateId = dayjs(date, DATE_FORMAT).format("YYYY-MM-DD")
+        let data = { }
+        data[dateId] = { islock : false }
+        return await db.collection('lock').doc(dateId).set(data, {merge: true})
+    },
+
+    getLock: async (date) => {
+        let dateId = dayjs(date, DATE_FORMAT).format("YYYY-MM-DD")
+        let snapshot = await db.collection('lock').doc(dateId).get()
+        let data = await snapshot.data()
+        return data
+    },
+
+
 
     
     

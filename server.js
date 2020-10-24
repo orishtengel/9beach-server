@@ -10,12 +10,12 @@ const fs = require('fs')
 const port = process.env.PORT || "4000";
 
 const { login } = require("./breach-firebase/BeachFIrebaseConnection");
-const { addShift, deleteShifts, getUser, getShifts, addTips, getTips, getShiftsByDate, getShiftsByDateAndId,getShiftsByDateAndIdWemail,getUsers, changeStandBy, addFacebookName, deleteUser, deleteFacebookName} = require("./breach-firebase/BeachFirestoreConnection");
+const { addShift, deleteShifts, getUser, getShifts, addTips, getTips, getShiftsByDate, getShiftsByDateAndId,getShiftsByDateAndIdWemail,getUsers, changeStandBy, addFacebookName, deleteUser, deleteFacebookName, setLocktrue,setLockfalse,getLock} = require("./breach-firebase/BeachFirestoreConnection");
 const { createUserToken, decodeToken } = require("./breach-firebase/token");
 const dayjs = require("dayjs");
 const { addConnection, broadcast } = require("./socket/BeachSocketConnection");
 const { facebookLogin } = require("./auth/login");
-const { isafterweek, isthisweek, isbeforelastweek ,isbefore } = require("./utils/daycheck");
+const { isafterweek, isthisweek, isbeforelastweek ,isbefore, getDaysAhead } = require("./utils/daycheck");
 
 const app = express();
 app.use(cookieParser());
@@ -292,6 +292,52 @@ app.post('/deleteFacebookName',async function (req,res){
             // broadcast('DELETE_EVENT', shifts)
         }
     else
+        res.sendStatus(400)
+    }
+})
+
+//add class lock
+app.post('/setLockTrue',async function (req,res){
+    if(req.beachUserToken.admin){
+       let change
+       let dates = getDaysAhead(req.body.date,7)
+       for (let i = 0; i < 7; i++ ) {
+          change = await setLocktrue(dates[i])
+       }
+       if (change) {
+        res.status(200).send(JSON.stringify({ ok: true })) 
+       }
+       else
+          res.sendStatus(400)
+    }
+})
+
+app.post('/setLockFalse',async function (req,res){
+    if(req.beachUserToken.admin){
+       let change
+       let dates = getDaysAhead(req.body.date,7)
+       for (let i = 0; i < 7; i++ ) {
+          change = await setLockfalse(dates[i])
+       }
+       if (change) {
+        res.status(200).send(JSON.stringify({ ok: true })) 
+       }
+       else
+          res.sendStatus(400)
+    }
+})
+
+app.post('/getIsLock', async function (req, res) {
+    if(req.beachUserToken.admin) {
+        let check = await getLock(req.body.date)
+        if(check) {
+            res.status(200).send(check)
+        }
+        else {
+            res.sendStatus(200)
+        }
+    }
+    else {
         res.sendStatus(400)
     }
 })

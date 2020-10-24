@@ -19,5 +19,15 @@ module.exports = {
     isbeforelastweek : () => {
         var date = dayjs().day(0).add(-7,'day').format('YYYY-MM-DD');
         return date;
+    },
+
+     getDaysAhead : (startDate, count) => {
+        let dates = [startDate]
+        let nextDay = startDate
+        for(let i = 0; i < count; i++) {
+            nextDay = dayjs(nextDay).add(1, 'day')
+            dates.push(nextDay.toDate())
+        }
+        return dates
     }
 }
