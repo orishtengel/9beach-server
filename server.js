@@ -121,26 +121,33 @@ app.post('/getShifts', async function (req, res) {
 
 app.post('/addShift', async function (req, res) {
     if(req.beachUserToken) {
-        if(req.body.date > isbefore() && req.body.date < isafterweek() && req.body.date > isthisweek()) {  
-                let user = await getUser(req.beachUserToken.email)
-                if(user) {
-                    let isExistsAlready = await getShiftsByDate(req.beachUserToken.email, req.body.date)
-                    if(!isExistsAlready) {
-                        let shift = await addShift(req.body.date, req.beachUserToken.email, user.name, user.color,req.body.standby)
-                        if(shift) {
-                            res.status(200).send(JSON.stringify({ ok: true, shift: shift }))
-                            broadcast('ADD_EVENT', shift)
-                        }
-                    }
-                    else {
-                        res.sendStatus(400)
-                    }
-            }
+        let lock = await getLock(req.body.date)
+        if(lock.islock) {
+            res.status(400).send({error: 'This shift is locked. can\'t be deleted'})
         }
         else {
-            res.status(400).send({error: 'can\'t add shift in this date, only in the next week'})
+            if(req.body.date > isbefore() && req.body.date < isafterweek() && req.body.date > isthisweek()) {  
+                    let user = await getUser(req.beachUserToken.email)
+                    if(user) {
+                        let isExistsAlready = await getShiftsByDate(req.beachUserToken.email, req.body.date)
+                        if(!isExistsAlready) {
+                            let shift = await addShift(req.body.date, req.beachUserToken.email, user.name, user.color,req.body.standby)
+                            if(shift) {
+                                res.status(200).send(JSON.stringify({ ok: true, shift: shift }))
+                                broadcast('ADD_EVENT', shift)
+                            }
+                        }
+                        else {
+                            res.sendStatus(400)
+                        }
+                }
+            }
+            else {
+                res.status(400).send({error: 'can\'t add shift in this date, only in the next week'})
+            }
         }
     }
+
 })
 
 app.post('/addShiftAdmin', async function (req, res) {
@@ -173,6 +180,7 @@ app.post('/deleteShift', async function (req, res) {
     if(req.beachUserToken) {
         let user = await getUser(req.beachUserToken.email)
         let shift = await getShiftsByDateAndIdWemail(req.body.date,req.body.id)
+        let lock = await getLock(req.body.date)
         if(req.beachUserToken.admin){
             // Check last week 
             if(req.body.date > isbeforelastweek()) {
@@ -190,25 +198,29 @@ app.post('/deleteShift', async function (req, res) {
             else {
                 res.status(400).send({error: 'This shift is too old. can\'t be deleted'})
             }
-
         }
         else if(user) {
-            if(req.body.date > isbefore() && req.body.date < isafterweek() && req.body.date > isthisweek()) {
-                let isExistsAlready = await getShiftsByDateAndId(req.beachUserToken.email, req.body.date, req.body.id)
-                if(isExistsAlready) {
-                    let shifts = await deleteShifts(req.body.date, req.beachUserToken.email, user.name, user.color, req.body.id,shift.standby)
-                    if(shifts) {
-                        res.status(200).send(JSON.stringify({ ok: true }))
-                        broadcast('DELETE_EVENT', shifts)
+                if(lock.islock) {
+                    res.status(400).send({error: 'This shift is locked. can\'t be deleted'})
+                }
+                else {
+                    if(req.body.date > isbefore() && req.body.date < isafterweek() && req.body.date > isthisweek()) {
+                        let isExistsAlready = await getShiftsByDateAndId(req.beachUserToken.email, req.body.date, req.body.id)
+                        if(isExistsAlready) {
+                            let shifts = await deleteShifts(req.body.date, req.beachUserToken.email, user.name, user.color, req.body.id,shift.standby)
+                            if(shifts) {
+                                res.status(200).send(JSON.stringify({ ok: true }))
+                                broadcast('DELETE_EVENT', shifts)
+                            }
+                        }
+                        else
+                            res.sendStatus(400)
+
+                    }
+                    else {
+                        res.status(400).send({error: 'can\'t add shift in this date, only in the next week'})
                     }
                 }
-                else
-                    res.sendStatus(400)
-
-            }
-            else {
-                res.status(400).send({error: 'can\'t add shift in this date, only in the next week'})
-            }
         }
         else
             res.sendStatus(400)
