@@ -16,6 +16,7 @@ const dayjs = require("dayjs");
 const { addConnection, broadcast } = require("./socket/BeachSocketConnection");
 const { facebookLogin } = require("./auth/login");
 const { isafterweek, isthisweek, isbeforelastweek ,isbefore, getDaysAhead } = require("./utils/daycheck");
+const { Dayjs } = require("dayjs");
 
 const app = express();
 app.use(cookieParser());
@@ -121,11 +122,6 @@ app.post('/getShifts', async function (req, res) {
 
 app.post('/addShift', async function (req, res) {
     if(req.beachUserToken) {
-        let lock = await getLock(req.body.date)
-        if(lock.islock) {
-            res.status(400).send({error: 'This shift is locked. can\'t be deleted'})
-        }
-        else {
             if(req.body.date > isbefore() && req.body.date < isafterweek() && req.body.date > isthisweek()) {  
                     let user = await getUser(req.beachUserToken.email)
                     if(user) {
@@ -145,9 +141,7 @@ app.post('/addShift', async function (req, res) {
             else {
                 res.status(400).send({error: 'can\'t add shift in this date, only in the next week'})
             }
-        }
     }
-
 })
 
 app.post('/addShiftAdmin', async function (req, res) {
@@ -200,10 +194,6 @@ app.post('/deleteShift', async function (req, res) {
             }
         }
         else if(user) {
-                if(lock.islock) {
-                    res.status(400).send({error: 'This shift is locked. can\'t be deleted'})
-                }
-                else {
                     if(req.body.date > isbefore() && req.body.date < isafterweek() && req.body.date > isthisweek()) {
                         let isExistsAlready = await getShiftsByDateAndId(req.beachUserToken.email, req.body.date, req.body.id)
                         if(isExistsAlready) {
@@ -220,7 +210,7 @@ app.post('/deleteShift', async function (req, res) {
                     else {
                         res.status(400).send({error: 'can\'t add shift in this date, only in the next week'})
                     }
-                }
+                
         }
         else
             res.sendStatus(400)
@@ -342,7 +332,8 @@ app.post('/setLockFalse',async function (req,res){
 app.post('/getIsLock', async function (req, res) {
     if(req.beachUserToken.admin) {
         let check = await getLock(req.body.date)
-        if(check) {
+
+        if(check.islock) {
             res.status(200).send(check)
         }
         else {
