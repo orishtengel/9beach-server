@@ -123,6 +123,11 @@ app.post('/getShifts', async function (req, res) {
 
 app.post('/addShift', async function (req, res) {
     if(req.beachUserToken) {
+        let lock = await getLock(req.body.date)
+        if(lock.islock) {
+            res.status(400).send({error: 'can\'t add shift in this date, date is lock'})
+        } 
+        else {
             if(req.body.date > isbefore() && req.body.date < isafterweek() && req.body.date > isthisweek()) {  
                     let user = await getUser(req.beachUserToken.email)
                     if(user) {
@@ -142,6 +147,7 @@ app.post('/addShift', async function (req, res) {
             else {
                 res.status(400).send({error: 'can\'t add shift in this date, only in the next week'})
             }
+        }
     }
 })
 
