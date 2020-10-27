@@ -17,6 +17,7 @@ const { addConnection, broadcast } = require("./socket/BeachSocketConnection");
 const { facebookLogin } = require("./auth/login");
 const { isafterweek, isthisweek, isbeforelastweek ,isbefore, getDaysAhead } = require("./utils/daycheck");
 const { Dayjs } = require("dayjs");
+const { Console } = require("console");
 
 const app = express();
 app.use(cookieParser());
@@ -334,7 +335,7 @@ app.post('/getIsLock', async function (req, res) {
         let check = await getLock(req.body.date)
         console.log(check)
         if(check) {
-            res.status(200).send({isLock: check.islock})
+            res.status(200).send({islock:check.islock})
         }
         else {
             res.sendStatus(200).send({isLock: false})
@@ -344,7 +345,9 @@ app.post('/getIsLock', async function (req, res) {
         res.sendStatus(400)
     }
 })
-
+let date = dayjs().format('YYYY-MM-DD')
+let check =  getLock(dayjs().format('YYYY-MM-DD'))
+console.log(check.islock)
 
 // Start the server on port 3000
 // app.listen(port, () => {
@@ -374,6 +377,7 @@ setInterval(() => {
 httpServer.listen(port, function() {
     console.log(`http/ws server listening on ${port}`);
 });
+
 //console.log(dayjs().day(0).add(-8,'day').format('YYYY-MM-DD'))
 
 //let date = dayjs("2020-11-02")
