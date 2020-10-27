@@ -330,14 +330,14 @@ app.post('/setLockFalse',async function (req,res){
 })
 
 app.post('/getIsLock', async function (req, res) {
-    if(req.beachUserToken.admin) {
+    if(req.beachUserToken) {
         let check = await getLock(req.body.date)
-
-        if(check.islock) {
-            res.status(200).send(check)
+        console.log(check)
+        if(check) {
+            res.status(200).send({isLock: check.islock})
         }
         else {
-            res.sendStatus(200)
+            res.sendStatus(200).send({isLock: false})
         }
     }
     else {
