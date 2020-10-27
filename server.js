@@ -178,6 +178,7 @@ app.post('/deleteShift', async function (req, res) {
         let lock = await getLock(req.body.date)
         if(req.beachUserToken.admin){
             // Check last week 
+            
             if(req.body.date > isbeforelastweek()) {
                 let isExistsAlready = await getShiftsByDateAndId(shift.email, req.body.date, req.body.id)
                 if(isExistsAlready) {
@@ -195,22 +196,27 @@ app.post('/deleteShift', async function (req, res) {
             }
         }
         else if(user) {
-                    if(req.body.date > isbefore() && req.body.date < isafterweek() && req.body.date > isthisweek()) {
-                        let isExistsAlready = await getShiftsByDateAndId(req.beachUserToken.email, req.body.date, req.body.id)
-                        if(isExistsAlready) {
-                            let shifts = await deleteShifts(req.body.date, req.beachUserToken.email, user.name, user.color, req.body.id,shift.standby)
-                            if(shifts) {
-                                res.status(200).send(JSON.stringify({ ok: true }))
-                                broadcast('DELETE_EVENT', shifts)
-                            }
-                        }
-                        else
-                            res.sendStatus(400)
-
+                    if(lock.islock) {
+                        res.status(400).send({error: 'can\'t add shift in this date, date is lock'})
                     }
                     else {
-                        res.status(400).send({error: 'can\'t add shift in this date, only in the next week'})
+                        if(req.body.date > isbefore() && req.body.date < isafterweek() && req.body.date > isthisweek()) {
+                            let isExistsAlready = await getShiftsByDateAndId(req.beachUserToken.email, req.body.date, req.body.id)
+                            if(isExistsAlready) {
+                                let shifts = await deleteShifts(req.body.date, req.beachUserToken.email, user.name, user.color, req.body.id,shift.standby)
+                                if(shifts) {
+                                    res.status(200).send(JSON.stringify({ ok: true }))
+                                    broadcast('DELETE_EVENT', shifts)
+                                }
+                            }
+                            else
+                                res.sendStatus(400)
+
+                        }
+                        else {
+                            res.status(400).send({error: 'can\'t add shift in this date, only in the next week'})
                     }
+                }
                 
         }
         else
@@ -346,7 +352,7 @@ app.post('/getIsLock', async function (req, res) {
     }
 })
 let date = dayjs().format('YYYY-MM-DD')
-let check =  getLock(dayjs().format('YYYY-MM-DD'))
+let check =  getLock(dayjs())
 console.log(check.islock)
 
 // Start the server on port 3000
