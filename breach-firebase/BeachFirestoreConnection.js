@@ -182,14 +182,14 @@ module.exports = {
     setLocktrue: async(date) => {
         let dateId = dayjs(date, DATE_FORMAT).format("YYYY-MM-DD")
         let data = { }
-        data[dateId] = { islock : true }
+        data = { islock : true }
         return await db.collection('lock').doc(dateId).set(data, {merge: true})
     }, 
 
     setLockfalse: async(date) => {
         let dateId = dayjs(date, DATE_FORMAT).format("YYYY-MM-DD")
         let data = { }
-        data[dateId] = { islock : false }
+        data = { islock : false }
         return await db.collection('lock').doc(dateId).set(data, {merge: true})
     },
 

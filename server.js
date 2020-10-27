@@ -335,7 +335,7 @@ app.post('/getIsLock', async function (req, res) {
         let check = await getLock(req.body.date)
         console.log(check)
         if(check) {
-            res.status(200).send({islock:check.islock})
+            res.status(200).send(check.islock)
         }
         else {
             res.sendStatus(200).send({isLock: false})
