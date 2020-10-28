@@ -307,7 +307,7 @@ app.post('/deleteFacebookName',async function (req,res){
             // broadcast('DELETE_EVENT', shifts)
         }
     else
-        res.sendStatus(400)
+        res.status(400).send({error: 'can\'t delete facebook name'})
     }
 })
 
