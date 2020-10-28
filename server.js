@@ -275,9 +275,8 @@ app.post('/addTip', async function (req, res) {
 
 app.post('/addFacebookName', async function (req, res) {
     if(req.beachUserToken.admin) {
-        console.log(req.body.name)
-        let isexsixt = await getOneFacebookName(req.body.name)
-        if(!isexsixt) {
+        // let isexsixt = await getOneFacebookName(req.body.name)
+        // if(!isexsixt) {
             let writeResult = await addFacebookName(req.body.name)
             if(writeResult) { 
                 res.status(200).send(JSON.stringify({ ok: true }))  
@@ -286,10 +285,9 @@ app.post('/addFacebookName', async function (req, res) {
                 res.status(400).send({error: 'can\'t add facebok name'})
             }
          }
-        else {
-            res.status(400).send({error: 'can\'t add facebok name'})
-        }
-    }
+        // else {
+        //     res.status(400).send({error: 'can\'t add facebok name'})
+        // 
 })
 
 app.post('/deleteUser',async function (req,res){
