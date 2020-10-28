@@ -280,7 +280,7 @@ app.post('/addFacebookName', async function (req, res) {
             res.status(200).send(JSON.stringify({ ok: true }))  
         }
         else {
-            res.sendStatus(400)
+            res.status(400).send({error: 'can\'t add facebok name'})
         }
     }
 })
@@ -295,7 +295,7 @@ app.post('/deleteUser',async function (req,res){
             //broadcast('DELETE_USERS', users)
         }
     else
-        res.sendStatus(400)
+        res.status(400).send({error: 'can\'t delete user'})
     }
 })
 
