@@ -141,7 +141,7 @@ module.exports = {
 
     },
     getOneFacebookName : async (name) => {
-        const snapshot = await db.collection('users').get()
+        const snapshot = await db.collection('facebookNames').get()
         let names = snapshot.data()
         if(names) {
             let index = names.findIndex( x => x == name )

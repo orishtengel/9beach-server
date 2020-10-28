@@ -18,6 +18,7 @@ const { facebookLogin } = require("./auth/login");
 const { isafterweek, isthisweek, isbeforelastweek ,isbefore, getDaysAhead } = require("./utils/daycheck");
 const { Dayjs } = require("dayjs");
 const { Console } = require("console");
+const e = require("express");
 
 const app = express();
 app.use(cookieParser());
@@ -276,10 +277,13 @@ app.post('/addFacebookName', async function (req, res) {
     if(req.beachUserToken.admin) {
         console.log(req.body.name)
         let isexsixt = await getOneFacebookName(req.body.name)
-        if(!isexsixt){
+        if(!isexsixt) {
             let writeResult = await addFacebookName(req.body.name)
             if(writeResult) { 
                 res.status(200).send(JSON.stringify({ ok: true }))  
+            }
+            else {
+                res.status(400).send({error: 'can\'t add facebok name'})
             }
          }
         else {
