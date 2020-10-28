@@ -345,22 +345,15 @@ app.post('/setLockFalse',async function (req,res){
 app.post('/getIsLock', async function (req, res) {
     if(req.beachUserToken) {
         let check = await getLock(req.body.date)
-        res.status(200).send({locked: check.islock})
+        if(check) 
+            res.status(200).send({locked: check.islock})
+        else
+            res.status(200).send({locked: false})
     }
     else {
         res.sendStatus(400)
     }
 })
-let date = dayjs().format('YYYY-MM-DD')
-let check =  getLock(dayjs())
-console.log(check.islock)
-
-// Start the server on port 3000
-// app.listen(port, () => {
-//     console.log('Express server listening on port', port)
-
-// });
-
 
 
 const httpServer = http.createServer(app);
@@ -383,18 +376,3 @@ setInterval(() => {
 httpServer.listen(port, function() {
     console.log(`http/ws server listening on ${port}`);
 });
-
-//console.log(dayjs().day(0).add(-8,'day').format('YYYY-MM-DD'))
-
-//let date = dayjs("2020-11-02")
-//
-// date < new Date() // everyone 
-// // CANT -- only if not admin
-// for (let  i=0; i<=6;i++) {
-//     console.log(dayjs().day(i).format('YYYY-MM-DD'))
-// }
-
-
-// // lock - which days to lock ?
-
-// new Date () - 1 <  date < dayjs(0) + 7 // add 7 days, first day of first week
