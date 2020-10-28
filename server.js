@@ -10,7 +10,7 @@ const fs = require('fs')
 const port = process.env.PORT || "4000";
 
 const { login } = require("./breach-firebase/BeachFIrebaseConnection");
-const { addShift, deleteShifts, getUser, getShifts, addTips, getTips, getShiftsByDate, getShiftsByDateAndId,getShiftsByDateAndIdWemail,getUsers, changeStandBy, addFacebookName, deleteUser, deleteFacebookName, setLocktrue,setLockfalse,getLock} = require("./breach-firebase/BeachFirestoreConnection");
+const { addShift, deleteShifts, getUser, getShifts, addTips, getTips, getShiftsByDate, getShiftsByDateAndId,getShiftsByDateAndIdWemail,getUsers, changeStandBy, addFacebookName, deleteUser, deleteFacebookName, setLocktrue,setLockfalse,getLock, getOneFacebookName} = require("./breach-firebase/BeachFirestoreConnection");
 const { createUserToken, decodeToken } = require("./breach-firebase/token");
 const dayjs = require("dayjs");
 const { addConnection, broadcast } = require("./socket/BeachSocketConnection");
@@ -275,10 +275,13 @@ app.post('/addTip', async function (req, res) {
 app.post('/addFacebookName', async function (req, res) {
     if(req.beachUserToken.admin) {
         console.log(req.body.name)
-        let writeResult = await addFacebookName(req.body.name)
-        if(writeResult) { 
-            res.status(200).send(JSON.stringify({ ok: true }))  
-        }
+        let isexsixt = await getOneFacebookName(req.body.name)
+        if(!isexsixt){
+            let writeResult = await addFacebookName(req.body.name)
+            if(writeResult) { 
+                res.status(200).send(JSON.stringify({ ok: true }))  
+            }
+         }
         else {
             res.status(400).send({error: 'can\'t add facebok name'})
         }

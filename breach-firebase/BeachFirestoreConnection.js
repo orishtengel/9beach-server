@@ -140,6 +140,16 @@ module.exports = {
         return arr
 
     },
+    getOneFacebookName : async (name) => {
+        const snapshot = await db.collection('users').get()
+        let names = snapshot.data()
+        if(names) {
+            let index = names.findIndex( x => x == name )
+            if(index != -1)
+                return names[index]
+        }
+        return undefined
+    },
 
     addFacebookName: async (name) => {
         let result = await db.collection('facebookNames').doc(name).create({})
