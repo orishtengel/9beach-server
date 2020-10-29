@@ -10,7 +10,7 @@ const fs = require('fs')
 const port = process.env.PORT || "4000";
 
 const { login } = require("./breach-firebase/BeachFIrebaseConnection");
-const { addShift, deleteShifts, getUser, getShifts, addTips, getTips, getShiftsByDate, getShiftsByDateAndId,getShiftsByDateAndIdWemail,getUsers, changeStandBy, addFacebookName, deleteUser, deleteFacebookName, setLocktrue,setLockfalse,getLock, getOneFacebookName} = require("./breach-firebase/BeachFirestoreConnection");
+const { addShift, deleteShifts, getUser, getShifts, addTips, getTips, getShiftsByDate, getShiftsByDateAndId,getShiftsByDateAndIdWemail,getUsers, changeStandBy, addFacebookName, deleteUser, deleteFacebookName, setLocktrue,setLockfalse,getLock, getOneFacebookName, getFacebookName} = require("./breach-firebase/BeachFirestoreConnection");
 const { createUserToken, decodeToken } = require("./breach-firebase/token");
 const dayjs = require("dayjs");
 const { addConnection, broadcast } = require("./socket/BeachSocketConnection");
@@ -360,6 +360,25 @@ app.post('/getIsLock', async function (req, res) {
     }
 })
 
+app.post('/getOneFacebookName',async function (req, res) {
+    if(req.beachUserToken.admin) {
+        let check = await getOneFacebookName(req.body.name)
+        check.then(function(result) { 
+            if(!result)
+                res.status(200).send(result)
+            else 
+                res.status(400).send({error: 'can\'t add facebook name already exist'})   
+         })
+         res.status(400).send({error: 'can\'t add facebook name already exist'}) 
+    }
+})
+
+let check = getOneFacebookName("orishtengel")
+console.log(check) // Promise { <pending> }
+
+check.then(function(result) {
+   console.log(result) // "Some User token"
+})
 
 const httpServer = http.createServer(app);
 const wss = new websocket.Server({ server: httpServer });

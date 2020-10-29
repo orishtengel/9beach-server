@@ -141,14 +141,14 @@ module.exports = {
 
     },
     getOneFacebookName : async (name) => {
-        const snapshot = await db.collection('facebookNames').get()
-        let names = snapshot.data()
-        if(names) {
-            let index = names.findIndex( x => x == name )
-            if(index != -1)
-                return names[index]
-        }
-        return undefined
+        const snapshot = await db.collection('facebookNames').doc(name).get()
+        let check = snapshot.data()
+        if(check)
+            return true
+        else    
+            return false
+    
+ 
     },
 
     addFacebookName: async (name) => {
