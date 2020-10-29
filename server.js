@@ -362,14 +362,12 @@ app.post('/getIsLock', async function (req, res) {
 
 app.post('/getOneFacebookName',async function (req, res) {
     if(req.beachUserToken.admin) {
-        let check = await getOneFacebookName(req.body.name)
-        check.then((result) => { 
-            if(!result)
+        const snapshot = await getOneFacebookName(req.body.name)
+        let check = snapshot.data()
+        if(check)
                 res.status(200).send(result)
             else 
                 res.status(400).send({error: 'can\'t add facebook name already exist'})   
-         })
-         res.status(400).send({error: 'can\'t add facebook name already exist'}) 
     }
 })
 
