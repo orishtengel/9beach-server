@@ -363,7 +363,7 @@ app.post('/getIsLock', async function (req, res) {
 app.post('/getOneFacebookName',async function (req, res) {
     if(req.beachUserToken.admin) {
         let check = await getOneFacebookName(req.body.name)
-        check.then(function(result) { 
+        check.then((result) => { 
             if(!result)
                 res.status(200).send(result)
             else 
