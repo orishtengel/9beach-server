@@ -363,16 +363,16 @@ app.post('/getIsLock', async function (req, res) {
 app.post('/getOneFacebookName',async function (req, res) {
     if(req.beachUserToken.admin) {
         let bol 
-        let check = await getOneFacebookName(req.body.name)
-        check.then((result) => { 
+        let check = await getOneFacebookName(req.body.name).then((result) => { 
             bol = result })
         if(!bol)
-            res.status(200).send(result)
+            res.status(200).send(bol)
         else 
             res.status(400).send({error: 'can\'t add facebook name already exist'})   
     
     }
 })
+
 
 
 const httpServer = http.createServer(app);
