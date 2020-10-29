@@ -373,12 +373,6 @@ app.post('/getOneFacebookName',async function (req, res) {
     }
 })
 
-let check = getOneFacebookName("orishtengel")
-console.log(check) // Promise { <pending> }
-
-check.then(function(result) {
-   console.log(result) // "Some User token"
-})
 
 const httpServer = http.createServer(app);
 const wss = new websocket.Server({ server: httpServer });
