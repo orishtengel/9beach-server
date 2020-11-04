@@ -19,6 +19,7 @@ const { isafterweek, isthisweek, isbeforelastweek ,isbefore, getDaysAhead } = re
 const { Dayjs } = require("dayjs");
 const { Console } = require("console");
 const e = require("express");
+const { DATE_FORMAT } = require("./consts");
 
 const app = express();
 app.use(cookieParser());
@@ -110,7 +111,7 @@ app.post('/getShifts', async function (req, res) {
                     events.push({
                         id: shift.id,
                         title: shift.name,
-                        date: dayjs(dateId + " " + keyHour, 'YYYY-MM-DD H:mm'),
+                        date: dayjs(dateId + " " + keyHour, 'YYYY-MM-DD H:mm').format(DATE_FORMAT),
                         backgroundColor : shift.backgroundColor,
                         standby:shift.standby,
                         email: shift.email
@@ -125,7 +126,7 @@ app.post('/getShifts', async function (req, res) {
 app.post('/addShift', async function (req, res) {
     if(req.beachUserToken) {
         let lock = await getLock(req.body.date)
-        if(lock.islock) {
+        if(lock && lock.islock) {
             res.status(400).send({error: 'can\'t add shift in this date, date is lock'})
         } 
         else {
